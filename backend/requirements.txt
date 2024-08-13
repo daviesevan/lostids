@@ -1,0 +1,8 @@
+flask
+flask-bcrypt
+flask-sqlalchemy
+flask-jwt-extended
+flask-migrate
+schedule
+flask-CORS
+firebase-admin
