@@ -6,3 +6,5 @@ flask-migrate
 schedule
 flask-CORS
 firebase-admin
+python-dotenv
+authlib
