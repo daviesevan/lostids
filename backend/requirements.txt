@@ -8,3 +8,4 @@ flask-CORS
 firebase-admin
 python-dotenv
 authlib
+gunicorn
