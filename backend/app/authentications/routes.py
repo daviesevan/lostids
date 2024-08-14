@@ -12,7 +12,7 @@ from app import oauth
 import os
 from urllib.parse import urlencode
 
-authentication_bp = Blueprint("authentication", __name__, url_prefix='/auth')
+authentication_bp = Blueprint("authentication", __name__, url_prefix='/api/auth')
 
 # Google authentication instance 
 google = oauth.register(
@@ -72,7 +72,7 @@ def signup():
 
         # Generate email verification token
         token = generate_email_verification_token(email)
-        url = "http://localhost:5000"
+        url = os.getenv("BACKEND_URL")
         verification_url = f"{url}/api/auth/verify-email/{token}"
 
         # Send verification email
@@ -189,7 +189,7 @@ def forgot_password():
 
         # Generate reset token
         token = generate_reset_token(user.email)
-        url = "http://localhost:5000"
+        url = os.getenv("BACKEND_URL")
         reset_url = f"{url}/api/auth/reset-password/{token}"
 
         # Send reset email
