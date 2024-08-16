@@ -27,7 +27,7 @@ export default function AuthForm({ method }) {
   };
 
   const handleGoogleAuth = () => {
-    window.location.href = "http://localhost:5000/api/auth/authorize/google";
+    window.location.href = "https://lostids.onrender.com/api/auth/authorize/google";
   };
 
   const handleSubmit = async (e) => {
