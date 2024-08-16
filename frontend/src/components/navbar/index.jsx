@@ -1,5 +1,5 @@
-import React from "react";
-import { NavLink } from "react-router-dom";
+import React, { useContext } from "react";
+import { Link, NavLink } from "react-router-dom";
 import { CircleUser, Menu, Package2, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,10 +12,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { AuthContext } from "@/contexts/authcontext";
 
 const Navbar = () => {
+  const { isAuthenticated, logout } = useContext(AuthContext);
+
   return (
-    <header className="sticky top-0 flex h-16 items-center gap-4 border-b bg-background px-6 md:px-8 lg:px-10">
+    <header className="sticky top-0 z-50 flex h-16 items-center gap-4 border-b bg-background px-6 md:px-8 lg:px-10">
       <nav className="hidden flex-col gap-9 text-sm font-medium md:flex md:flex-row md:items-center md:gap-6 lg:gap-8 xl:gap-10">
         <NavLink
           to="/"
@@ -81,7 +84,11 @@ const Navbar = () => {
       </nav>
       <Sheet>
         <SheetTrigger asChild>
-          <Button variant="outline" size="icon" className="shrink-0 border-0 bg-black text-white md:hidden">
+          <Button
+            variant="outline"
+            size="icon"
+            className="shrink-0 border-0 bg-black text-white md:hidden"
+          >
             <Menu className="h-5 w-5" />
             <span className="sr-only">Toggle navigation menu</span>
           </Button>
@@ -171,12 +178,27 @@ const Navbar = () => {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuLabel>My Account</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>Profile</DropdownMenuItem>
-            <DropdownMenuItem>Support</DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>Logout</DropdownMenuItem>
+            {isAuthenticated ? (
+              <>
+                <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem>Profile</DropdownMenuItem>
+                <DropdownMenuItem>Support</DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem>
+                  <span onClick={logout} className="cursor-pointer">
+                    Logout
+                  </span>
+                </DropdownMenuItem>
+              </>
+            ) : (
+              <>
+                <DropdownMenuLabel>Register/Login</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem><Link to="/signup">Sign Up</Link></DropdownMenuItem>
+                <DropdownMenuItem><Link to="/signin">Sign In</Link></DropdownMenuItem>
+              </>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

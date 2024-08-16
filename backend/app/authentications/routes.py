@@ -52,8 +52,8 @@ def confirm_email_verification_token(token, expiration=3600):
 
 @authentication_bp.post('/signup')
 def signup():
-    data = request.get_json()
-
+    data = request.json
+    print(data)
     username = data.get('username')
     fullname = data.get('fullname')
     email = data.get('email')
@@ -62,8 +62,15 @@ def signup():
     if not username or not email or not password or not fullname:
         return jsonify({'message': 'Required fields were not filled'}), 400
 
+    existing_user = User.query.filter((User.username == username) | (User.email == email)).first()
+    if existing_user:
+        if existing_user.username == username:
+            return jsonify({'message': 'Username already exists'}), 409
+        else:
+            return jsonify({'message': 'Email already exists'}), 409
+
     try:
-        new_user = User(username=username, email=email)
+        new_user = User(username=username,fullname=fullname, email=email)
         new_user.set_password(password)
         new_user.is_email_verified = False  
 
@@ -72,8 +79,8 @@ def signup():
 
         # Generate email verification token
         token = generate_email_verification_token(email)
-        url = os.getenv("BACKEND_URL")
-        verification_url = f"{url}/api/auth/verify-email/{token}"
+        url = os.getenv("FRONTEND_URL")
+        verification_url = f"{url}/email-verification/{token}"
 
         # Send verification email
         verification_email_content = user_email_verification(verification_url, new_user.username)
@@ -98,21 +105,24 @@ def signup():
 
 @authentication_bp.post('/signin')
 def signin():
-    data = request.get_json()
+    data = request.json
 
     # Extract and validate the data
-    username = data.get('username')
+    email = data.get('email')
     password = data.get('password')
 
-    if not username or not password:
-        return jsonify({'message': 'Username and password are required'}), 400
+    if not email or not password:
+        return jsonify({'message': 'email and password are required'}), 400
 
     try:
         # Fetch the user from the database
-        user = User.query.filter_by(username=username).first()
+        user = User.query.filter_by(email=email).first()
 
         if user is None:
             return jsonify({'message': 'Required fields were not filled'}), 401
+
+        if user.used_google:
+            return jsonify({'message': 'Hmm... Use google for your signin'}), 401
 
         if user.account_locked:
             return jsonify({'message': 'Account is locked. Please contact support.'}), 403
@@ -151,7 +161,7 @@ def signin():
         db.session.rollback()
         return jsonify({'message': 'An error occurred', 'error': str(e)}), 500
 
-@authentication_bp.get('/verify-email/<token>')
+@authentication_bp.post('/verify-email/<token>')
 def verify_email(token):
     try:
         email = confirm_email_verification_token(token, expiration=3600)  # 1 hour expiration
@@ -175,7 +185,7 @@ def verify_email(token):
 
 @authentication_bp.post('/forgot-password')
 def forgot_password():
-    data = request.get_json()
+    data = request.json
     email = data.get('email')
 
     if not email:
@@ -271,14 +281,15 @@ def google_callback():
                 email=email,
                 fullname=name,
                 username=username,
-                is_email_verified=True
+                is_email_verified=True,
+                used_google=True
             )
             db.session.add(user)
             db.session.flush()
 
-        # Send welcome email
-        welcome_content = user_signup_email(user.fullname) 
-        send_email(user.email, "Welcome to SafeReturn: Where 'Gone Forever' Means 'See You Soon'", welcome_content)
+            # Send welcome email
+            welcome_content = user_signup_email(user.fullname) 
+            send_email(user.email, "Welcome to SafeReturn: Where 'Gone Forever' Means 'See You Soon'", welcome_content)
 
         access_token = create_access_token(identity=user.id)
         refresh_token = create_refresh_token(identity=user.id)
