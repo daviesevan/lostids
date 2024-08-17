@@ -4,7 +4,7 @@ load_dotenv(find_dotenv())
 
 class ApplicationConfiguration:
     SECRET_KEY = getenv('APP_SECRET')
-    SQLALCHEMY_DATABASE_URI = "sqlite:///lostids.db"
+    SQLALCHEMY_DATABASE_URI = f"postgresql://{getenv("PGUSER")}:{getenv("PGPASSWORD")}@{getenv("PGHOST")}/{getenv("PGDATABASE")}?sslmode=require"
     SECURITY_PASSWORD_SALT = getenv("SECURITY_PASSWORD_SALT")
     JWT_SECRET_KEY = getenv('APP_SECRET')
     JWT_ACCESS_TOKEN_EXPIRES = 900 #15 minutes
